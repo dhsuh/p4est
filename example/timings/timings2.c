@@ -505,6 +505,7 @@ main (int argc, char **argv)
   p4est->inspect->use_balance_ranges_notify = use_ranges_notify;
   p4est->inspect->use_balance_verify = use_balance_verify;
   p4est->inspect->balance_max_ranges = max_ranges;
+  p4est->inspect->notify_alg = sc_notify_alg_default;
   P4EST_GLOBAL_STATISTICSF
     ("Balance: new overlap %d new subtree %d borders %d\n", overlap,
      (overlap && subtree), (overlap && borders));

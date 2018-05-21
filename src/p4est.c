@@ -1318,6 +1318,7 @@ p4est_balance_ext (p4est_t * p4est, p4est_connect_type_t btype,
   MPI_Request        *send_requests_first_count, *send_requests_first_load;
   MPI_Request        *send_requests_second_count, *send_requests_second_load;
   MPI_Status         *recv_statuses, *jstatus;
+  sc_notify_alg_t     notify_alg;
 #endif /* P4EST_ENABLE_MPI */
 
   P4EST_GLOBAL_PRODUCTIONF ("Into " P4EST_STRING
@@ -1655,6 +1656,7 @@ p4est_balance_ext (p4est_t * p4est, p4est_connect_type_t btype,
   is_ranges_active = 0;
   is_notify_active = 1;
   is_balance_verify = 0;
+  notify_alg = sc_notify_alg_default;
 #endif
   if (p4est->inspect != NULL) {
     p4est->inspect->balance_A += sc_MPI_Wtime ();
@@ -1676,6 +1678,7 @@ p4est_balance_ext (p4est_t * p4est, p4est_connect_type_t btype,
       is_ranges_active = is_notify_active = 1;
     }
     is_balance_verify = p4est->inspect->use_balance_verify;
+    notify_alg = p4est->inspect->notify_alg;
 #endif
   }
 
@@ -1819,9 +1822,9 @@ p4est_balance_ext (p4est_t * p4est, p4est_connect_type_t btype,
     if (p4est->inspect != NULL) {
       p4est->inspect->balance_notify = -MPI_Wtime ();
     }
-    mpiret = sc_notify (receiver_ranks_notify, num_receivers_notify,
-                        sender_ranks_notify, &num_senders_notify,
-                        p4est->mpicomm);
+    mpiret = sc_notify (notify_alg, receiver_ranks_notify,
+                        num_receivers_notify, sender_ranks_notify,
+                        &num_senders_notify, p4est->mpicomm);
     SC_CHECK_MPI (mpiret);
     if (p4est->inspect != NULL) {
       p4est->inspect->balance_notify += MPI_Wtime ();
@@ -1835,10 +1838,9 @@ p4est_balance_ext (p4est_t * p4est, p4est_connect_type_t btype,
       if (p4est->inspect != NULL) {
         p4est->inspect->balance_notify_allgather = -MPI_Wtime ();
       }
-      mpiret = sc_notify_allgather (receiver_ranks_notify,
-                                    num_receivers_notify,
-                                    sender_ranks2, &num_senders2,
-                                    p4est->mpicomm);
+      mpiret = sc_notify (SC_NOTIFY_ALLGATHER, receiver_ranks_notify,
+                          num_receivers_notify, sender_ranks2, &num_senders2,
+                          p4est->mpicomm);
       SC_CHECK_MPI (mpiret);
       if (p4est->inspect != NULL) {
         p4est->inspect->balance_notify_allgather += MPI_Wtime ();

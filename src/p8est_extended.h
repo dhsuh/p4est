@@ -44,6 +44,7 @@
 #include <p8est_mesh.h>
 #include <p8est_iterate.h>
 #include <p8est_lnodes.h>
+#include <sc_notify.h>
 
 SC_EXTERN_C_BEGIN;
 
@@ -82,6 +83,7 @@ struct p8est_inspect
   /** time spent in sc_notify_allgather */
   double              balance_notify_allgather;
   int                 use_B;
+  sc_notify_alg_t     notify_alg;
 };
 
 /** Callback function prototype to replace one set of quadrants with another.
