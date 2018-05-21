@@ -438,6 +438,7 @@ main (int argc, char **argv)
   /* TODO: fusion for finite element nodes as well */
   p4est_lnodes_t     *lnodes;   /* runtime option: time lnodes construction */
 #endif
+  int                 notify_alg;
   int                 first_argc;
   int                 num_tests = 3;
   int                 max_level = refine_level;
@@ -475,6 +476,8 @@ main (int argc, char **argv)
   SC_CHECK_MPI (mpiret);
   sc_init (mpicomm, 1, 1, NULL, SC_LP_DEFAULT);
 
+  notify_alg = (int) SC_NOTIFY_DEFAULT;
+
   /* process command line arguments */
   opt = sc_options_new (argv[0]);
 
@@ -486,6 +489,8 @@ main (int argc, char **argv)
                          "Base name of visualization output");
   sc_options_add_int (opt, 'x', "max-level", &sphere.max_level,
                       sphere.max_level, "Maximum refinement level");
+  sc_options_add_int (opt, 'n', "notify-alg", &notify_alg,
+                      notify_alg, "Notify algorithm (see sc_notify.h) for enum");
 
   first_argc = sc_options_parse (p4est_package_id, SC_LP_DEFAULT,
                                  opt, argc, argv);
@@ -494,6 +499,10 @@ main (int argc, char **argv)
     return 1;
   }
   sc_options_print_summary (p4est_package_id, SC_LP_PRODUCTION, opt);
+
+  if (notify_alg > 0) {
+    sc_notify_alg_default = notify_alg;
+  }
 
   sc_set_log_defaults (NULL, NULL, log_priority);
   p4est_init (NULL, log_priority);
