@@ -280,7 +280,14 @@ p4est_neigh_allgather (p4est_neigh_t *neigh,
   P4EST_ASSERT (send_array->elem_count == 1);
   P4EST_ASSERT (recv_array->elem_count == neigh->n_neigh);
 
-  p4est_neigh_all_basic (neigh, send_array, recv_array, ordered, 0);
+  if (neigh->method == P4EST_NEIGH_MPI) {
+	MPI_Neighbor_allgather (send_array->array, send_array->elem_count, sc_MPI_BYTE,
+							recv_array->array, recv_array->elem_count, sc_MPI_BTYE, 
+							neigh->comm);
+  }
+  else {
+    p4est_neigh_all_basic (neigh, send_array, recv_array, ordered, 0);
+  }
 }
 
 #if defined(P4EST_ENABLE_MPIMPROBE)
