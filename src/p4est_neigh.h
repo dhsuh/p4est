@@ -53,9 +53,17 @@ typedef struct p4est_neigh_s p4est_neigh_t;
  */
 p4est_neigh_t *p4est_neigh_new (p4est_t *p4est, int n_neigh, const int *neigh_procs);
 
-/** Destroy a neighborhood. */
+/** Destroy a neighborhood object.
+ *
+ * \param[in] neigh  The neighborhodd object to be destroyed.
+ */
 void p4est_neigh_destroy (p4est_neigh_t *neigh);
 
+/** Get the array of procs.
+ *
+ * \param [in] neigh 	Neighborhood object from which array of neighboring 
+ *	                    processors will be fetched from.
+ */
 void p4est_neigh_get_procs (p4est_neigh_t *neigh, int *n_neigh,
                             const int **neigh_procs);
 

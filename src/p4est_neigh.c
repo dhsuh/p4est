@@ -81,11 +81,12 @@ p4est_neigh_t *
 p4est_neigh_new (p4est_t *p4est, int n_neigh, const int *neigh_procs)
 {
   int mpiret;
+
   p4est_neigh_t *neigh;
 
   neigh = P4EST_ALLOC_ZERO (p4est_neigh_t, 1);
   neigh->method = P4EST_NEIGH_BASIC;
-
+  
   P4EST_ASSERT (n_neigh >= 0);
 
 #if !defined(P4EST_ENABLE_MPI)
@@ -95,6 +96,11 @@ p4est_neigh_new (p4est_t *p4est, int n_neigh, const int *neigh_procs)
 
   if (neigh->method == P4EST_NEIGH_MPI) {
     /* TODO: create distributed graph MPI_Dist_graph_create_adjacent */
+	mpiret = MPI_Dist_graph_create_adjacent(p4est->mpicomm, n_neigh,
+											neigh_procs, MPI_UNWEIGHTED,
+											n_neigh, neigh_procs, 
+											MPI_UNWEIGHTED, NULL, 0, &(neigh->comm));
+	SC_CHECK_MPI (mpiret);
   }
   else {
     mpiret = sc_MPI_Comm_dup (p4est->mpicomm, &(neigh->comm));
@@ -571,6 +577,7 @@ p4est_neigh_alltoallv (p4est_neigh_t *neigh,
                        sc_array_t *recv_array,
                        sc_array_t *recv_offsets)
 {
+  int mpiret;
   P4EST_ASSERT (send_array->elem_size == recv_array->elem_size);
   P4EST_ASSERT (SC_ARRAY_IS_OWNER (recv_array));
   P4EST_ASSERT (send_offsets->elem_size == sizeof (size_t));
@@ -581,5 +588,13 @@ p4est_neigh_alltoallv (p4est_neigh_t *neigh,
     return;
   }
 
-  p4est_neigh_allv_basic (neigh, send_array, send_offsets, recv_array, recv_offsets, 1);
+  if (neigh->method == P4EST_NEIGH_MPI) {
+      mpiret = MPI_Neighbor_alltoallv (send_array->array,   send_array->elem_count, 
+	    	  						   send_offsets->array, sc_MPI_BYTE, 
+			    					   recv_array->array,   recv_array->elem_count,
+				    				   recv_offsets->array, sc_MPI_BYTE, neigh->comm);
+      }
+  else {
+      p4est_neigh_allv_basic (neigh, send_array, send_offsets, recv_array, recv_offsets, 1);
+  }
 }
